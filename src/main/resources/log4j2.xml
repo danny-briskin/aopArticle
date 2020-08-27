@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <!-- Properties section -->
+    <Properties>
+        <property name="log_level_console">${bundle:application:log.level.console}</property>
+        <property name="log_level_file">${bundle:application:log.level.file}</property>
+        <Property name="baseDir">${bundle:application:log.path}</Property>
+        <Property name="archDir">${baseDir}/arch</Property>
+        <Property name="core_log">core_${sys:user.name:-batch}.log</Property>
+    </Properties>
+
+    <!-- Appenders section -->
+    <Appenders>
+        <!-- console appender -->
+        <Console name="console_file" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="[%highlight{%5p}] %d{HH:mm:ss} [%t] %c{1.} %C{1} - %msg%n"/>
+        </Console>
+
+        <!-- File appender of core log -->
+        <RollingFile name="core_file" fileName="${baseDir}/${core_log}"
+                     filePattern="${archDir}/arch_core_log-%d{MM-dd-yyyy_HH}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%level{length=1} %d{COMPACT} [%marker] [%t] %c{1.} %C{1} %m %ex%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5000000"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${archDir}" maxDepth="2">
+                    <IfFileName glob="*/arch_core-*.log*.gz"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+
+    <!-- Loggers section -->
+    <Loggers>
+        <!-- core logger -->
+        <Logger name="com.qaconsultants.core" level="${log_level_file}" additivity="true">
+            <AppenderRef ref="core_file" level="${log_level_file}"/>
+        </Logger>
+        <!-- Root logger -->
+        <Root level="${log_level_console}">
+            <AppenderRef ref="console_file" level="${log_level_console}"/>
+        </Root>
+    </Loggers>
+</Configuration>
